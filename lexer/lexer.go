@@ -1,7 +1,6 @@
 package lexer
 
 import "unicode"
-import "fmt"
 
 var control = map[rune]int{
 	'(': L_PAREN,
@@ -14,13 +13,14 @@ var control = map[rune]int{
 }
 
 var keywords = map[string]bool{
-	"for":   true,
-	"while": true,
-	"if":    true,
-	"else":  true,
-	"word":  true,
-	"atom":  true,
-	"func":  true,
+	"for":    true,
+	"while":  true,
+	"if":     true,
+	"else":   true,
+	"word":   true,
+	"atom":   true,
+	"func":   true,
+	"return": true,
 }
 
 var operators = map[string]bool{
@@ -87,13 +87,14 @@ func getToken(val string) Token {
 
 func Lex(str string) []Token {
 	in_str := false
+
 	val := ""
 
 	toklist := make([]Token, 0)
 
 	for _, ch := range str {
 		if ch == '"' || ch == '\'' {
-			if in_str && ch == rune(val[0]) {
+			if in_str {
 				val += string(ch)
 				if ch == rune(val[0]) {
 					in_str = false
@@ -110,6 +111,18 @@ func Lex(str string) []Token {
 		} else if in_str {
 			val += string(ch)
 		} else if unicode.IsLetter(ch) || unicode.IsDigit(ch) || ch == '_' {
+			var rune0 rune
+			for _, r := range val {
+				rune0 = r
+				break
+			}
+
+			if !(unicode.IsLetter(rune0) || unicode.IsDigit(rune0) || rune0 == '_') {
+				if val != "" {
+					toklist = append(toklist, getToken(val))
+					val = ""
+				}
+			}
 			val += string(ch)
 
 		} else if multi_operator[string(ch)] || operators[string(ch)] {
@@ -136,7 +149,6 @@ func Lex(str string) []Token {
 		} else {
 			return nil
 		}
-		fmt.Println(val)
 	}
 
 	if val != "" {
