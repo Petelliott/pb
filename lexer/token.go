@@ -12,9 +12,10 @@ const (
 	SEMICOLON  = iota
 	OPERATOR   = iota
 	KEYWORD    = iota
+	EOF        = iota
 )
 
 type Token struct {
-	tok   int
-	value string
+	Tok   int
+	Value string
 }

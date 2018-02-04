@@ -95,3 +95,11 @@ func TestEx1(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func BenchmarkEx1(b *testing.B) {
+	str := "func main() {\n\tword abc=5;\n\tabc += abc*6;\n\treturn \"abc=\"+abc;\n}"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Lex(str)
+	}
+}
