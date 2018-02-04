@@ -26,20 +26,22 @@ func (ti *TokenIterator) Lookahead(n int) Token {
 	return ti.tokens[ti.cursor+n]
 }
 
-func (ti *TokenIterator) Accept(tok Token) bool {
-	if ti.Lookahead(0) == tok {
+func (ti *TokenIterator) Accept(tok int) (Token, bool) {
+	token := ti.Lookahead(0)
+	if token.Tok == tok {
 		ti.cursor++
-		return true
+		return token, true
 	}
-	return false
+	return token, false
 }
 
-func (ti *TokenIterator) Expect(tok Token) bool {
-	if ti.Lookahead(0) == tok {
+func (ti *TokenIterator) Expect(tok int) Token {
+	token := ti.Lookahead(0)
+	if token.Tok == tok {
 		ti.cursor++
-		return true
+		return token
 	}
-	fmt.Println("Unexpected token.")
+	fmt.Println("unexpected token")
 	os.Exit(1)
-	return false
+	return token
 }

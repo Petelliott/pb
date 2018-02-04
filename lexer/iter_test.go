@@ -41,22 +41,22 @@ func TestLookahead(t *testing.T) {
 func TestAccept(t *testing.T) {
 	tokens := NewTokenIterator([]Token{Token{1, ""}, Token{2, ""}})
 
-	if !tokens.Accept(Token{1, ""}) {
+	if _, ok := tokens.Accept(1); !ok {
 		fmt.Println("did not accept 1")
 		t.Fail()
 	}
 
-	if tokens.Accept(Token{1, ""}) {
+	if _, ok := tokens.Accept(1); ok {
 		fmt.Println("accepted 1")
 		t.Fail()
 	}
 
-	if !tokens.Accept(Token{2, ""}) {
+	if _, ok := tokens.Accept(2); !ok {
 		fmt.Println("did not accept 2")
 		t.Fail()
 	}
 
-	if !tokens.Accept(Token{EOF, ""}) {
+	if _, ok := tokens.Accept(EOF); !ok {
 		fmt.Println("did not accept EOF")
 		t.Fail()
 	}
