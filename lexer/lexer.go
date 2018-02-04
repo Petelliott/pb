@@ -1,6 +1,7 @@
 package lexer
 
 import "unicode"
+import "fmt"
 
 var control = map[rune]int{
 	'(': L_PAREN,
@@ -22,6 +23,44 @@ var keywords = map[string]bool{
 	"func":  true,
 }
 
+var operators = map[string]bool{
+	"+":  true,
+	"-":  true,
+	"*":  true,
+	"/":  true,
+	"&":  true,
+	"|":  true,
+	"^":  true,
+	"~":  true,
+	"%":  true,
+	"!":  true,
+	"!=": true,
+	"=":  true,
+	"&&": true,
+	"||": true,
+	"^^": true,
+	"==": true,
+	"+=": true,
+	"-=": true,
+	">=": true,
+	"<=": true,
+	">":  true,
+	"<":  true,
+	">>": true,
+	"<<": true,
+}
+
+var multi_operator = map[string]bool{
+	"+": true,
+	"-": true,
+	"=": true,
+	"&": true,
+	"|": true,
+	"^": true,
+	">": true,
+	"<": true,
+}
+
 func getToken(val string) Token {
 	var rune0 rune
 	for _, r := range val {
@@ -39,6 +78,8 @@ func getToken(val string) Token {
 		} else {
 			return Token{IDENTIFIER, val}
 		}
+	} else if operators[val] {
+		return Token{OPERATOR, val}
 	} else {
 		return Token{-1, "ERROR"}
 	}
@@ -52,36 +93,54 @@ func Lex(str string) []Token {
 
 	for _, ch := range str {
 		if ch == '"' || ch == '\'' {
+			if in_str && ch == rune(val[0]) {
+				val += string(ch)
+				if ch == rune(val[0]) {
+					in_str = false
+				}
+			} else {
+				if val != "" {
+					toklist = append(toklist, getToken(val))
+					val = ""
+				}
 
-			val += string(ch)
-
-			if val == "\"" || val == "'" {
+				val = string(ch)
 				in_str = true
-			} else if ch == rune(val[0]) {
-				toklist = append(toklist, getToken(val))
-				in_str = false
-				val = ""
 			}
 		} else if in_str {
 			val += string(ch)
 		} else if unicode.IsLetter(ch) || unicode.IsDigit(ch) || ch == '_' {
 			val += string(ch)
-		} else {
 
+		} else if multi_operator[string(ch)] || operators[string(ch)] {
+			op := val + string(ch)
+			if multi_operator[op] {
+				val = op
+			} else if operators[op] {
+				val = op
+			} else {
+				toklist = append(toklist, getToken(val))
+				val = string(ch)
+			}
+		} else if toktype, in := control[ch]; in {
 			if val != "" {
 				toklist = append(toklist, getToken(val))
+				val = ""
 			}
-			val = ""
-
-			if !unicode.IsSpace(ch) {
-				toktype, in := control[ch]
-				if in {
-					toklist = append(toklist, Token{toktype, ""})
-				} else {
-					toklist = append(toklist, Token{OPERATOR, string(ch)})
-				}
+			toklist = append(toklist, Token{toktype, ""})
+		} else if unicode.IsSpace(ch) {
+			if val != "" {
+				toklist = append(toklist, getToken(val))
+				val = ""
 			}
+		} else {
+			return nil
 		}
+		fmt.Println(val)
+	}
+
+	if val != "" {
+		toklist = append(toklist, getToken(val))
 	}
 
 	return toklist

@@ -6,6 +6,6 @@ import (
 )
 
 func TestLex(t *testing.T) {
-	fmt.Println(Lex("atom main()  {word a=\"a=242\"};  "))
+	fmt.Println(Lex("atom main()  {word a+=\"a=242\"};  "))
 	t.Fail()
 }
