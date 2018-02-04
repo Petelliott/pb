@@ -10,9 +10,18 @@ const (
 	L_BRACE    = iota
 	R_BRACE    = iota
 	SEMICOLON  = iota
+	COMMA      = iota
+	DOT        = iota
 	OPERATOR   = iota
-	KEYWORD    = iota
 	EOF        = iota
+	ERROR      = iota
+	KW_FOR     = iota
+	KW_WHILE   = iota
+	KW_IF      = iota
+	KW_ELSE    = iota
+	KW_FUNC    = iota
+	KW_RETURN  = iota
+	TYPE       = iota
 )
 
 type Token struct {

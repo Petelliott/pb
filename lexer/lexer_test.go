@@ -36,8 +36,8 @@ func TestString(t *testing.T) {
 func TestKeyword(t *testing.T) {
 	result := Lex("for bat \nif   =while")
 	expected := []Token{
-		Token{KEYWORD, "for"}, Token{IDENTIFIER, "bat"},
-		Token{KEYWORD, "if"}, Token{OPERATOR, "="}, Token{KEYWORD, "while"},
+		Token{KW_FOR, ""}, Token{IDENTIFIER, "bat"},
+		Token{KW_IF, ""}, Token{OPERATOR, "="}, Token{KW_WHILE, ""},
 	}
 
 	if !reflect.DeepEqual(result, expected) {
@@ -79,12 +79,12 @@ func TestIntLiteral(t *testing.T) {
 func TestEx1(t *testing.T) {
 	result := Lex("func main() {\n\tword abc=5;\n\tabc += abc*6;\n\treturn \"abc=\"+abc;\n}")
 	expected := []Token{
-		Token{KEYWORD, "func"}, Token{IDENTIFIER, "main"}, Token{L_PAREN, ""},
-		Token{R_PAREN, ""}, Token{L_BRACE, ""}, Token{KEYWORD, "word"},
+		Token{KW_FUNC, ""}, Token{IDENTIFIER, "main"}, Token{L_PAREN, ""},
+		Token{R_PAREN, ""}, Token{L_BRACE, ""}, Token{TYPE, "word"},
 		Token{IDENTIFIER, "abc"}, Token{OPERATOR, "="}, Token{LITERAL, "5"},
 		Token{SEMICOLON, ""}, Token{IDENTIFIER, "abc"}, Token{OPERATOR, "+="},
 		Token{IDENTIFIER, "abc"}, Token{OPERATOR, "*"}, Token{LITERAL, "6"},
-		Token{SEMICOLON, ""}, Token{KEYWORD, "return"}, Token{LITERAL, "\"abc=\""},
+		Token{SEMICOLON, ""}, Token{KW_RETURN, ""}, Token{LITERAL, "\"abc=\""},
 		Token{OPERATOR, "+"}, Token{IDENTIFIER, "abc"}, Token{SEMICOLON, ""},
 		Token{R_BRACE, ""},
 	}

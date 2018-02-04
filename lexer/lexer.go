@@ -10,17 +10,22 @@ var control = map[rune]int{
 	'{': L_BRACE,
 	'}': R_BRACE,
 	';': SEMICOLON,
+	',': COMMA,
+	'.': DOT,
 }
 
-var keywords = map[string]bool{
-	"for":    true,
-	"while":  true,
-	"if":     true,
-	"else":   true,
-	"word":   true,
-	"atom":   true,
-	"func":   true,
-	"return": true,
+var keywords = map[string]int{
+	"for":    KW_FOR,
+	"while":  KW_WHILE,
+	"if":     KW_IF,
+	"else":   KW_ELSE,
+	"func":   KW_FUNC,
+	"return": KW_RETURN,
+}
+
+var types = map[string]bool{
+	"word": true,
+	"atom": true,
 }
 
 var operators = map[string]bool{
@@ -72,9 +77,10 @@ func getToken(val string) Token {
 		return Token{LITERAL, val}
 
 	} else if unicode.IsLetter(rune0) {
-
-		if keywords[val] {
-			return Token{KEYWORD, val}
+		if types[val] {
+			return Token{TYPE, val}
+		} else if tok, ok := keywords[val]; ok {
+			return Token{tok, ""}
 		} else {
 			return Token{IDENTIFIER, val}
 		}
