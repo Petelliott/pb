@@ -41,7 +41,7 @@ func (ti *TokenIterator) Expect(tok int) Token {
 		ti.cursor++
 		return token
 	}
-	fmt.Println("unexpected token")
+	fmt.Println("expected:", tok, ", got:", token.Tok)
 	os.Exit(1)
 	return token
 }

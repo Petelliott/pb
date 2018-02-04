@@ -67,8 +67,8 @@ func (_ Identifier) StatementType() int {
 }
 
 type Control struct {
-	Keyword string
-	Expr    string
+	Keyword int
+	Expr    Expression
 	Body    Block
 }
 
