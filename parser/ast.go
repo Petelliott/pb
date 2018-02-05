@@ -104,7 +104,7 @@ func (_ Literal) ExpressionType() int {
 }
 
 type Identifier struct {
-	name string
+	Name string
 }
 
 func (_ Identifier) ExpressionType() int {
@@ -112,8 +112,8 @@ func (_ Identifier) ExpressionType() int {
 }
 
 type Call struct {
-	name string
-	args []Expression
+	Name string
+	Args []Expression
 }
 
 func (_ Call) ExpressionType() int {
