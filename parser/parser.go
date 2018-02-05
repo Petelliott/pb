@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"github.com/petelliott/pb/lexer"
+	"github.com/Petelliott/pb/lexer"
 	"os"
 )
 
