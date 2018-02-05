@@ -24,12 +24,12 @@ func TestParseProgram(t *testing.T) {
 }
 
 func TestParseFunction(t *testing.T) {
-	progtok := lexer.NewTokenIterator(lexer.Lex("func main(word a, atom b) {1;}"))
+	progtok := lexer.NewTokenIterator(lexer.Lex("func main(word a, atom b) {\"1\";}"))
 	ast := ParseFunction(&progtok)
 
 	expected := Function{
 		"main", []Declaration{Declaration{"word", "a"}, Declaration{"atom", "b"}},
-		Block{[]Statement{Literal{"1"}}},
+		Block{[]Statement{StrLiteral{"1"}}},
 	}
 
 	if !reflect.DeepEqual(ast, expected) {
@@ -56,7 +56,7 @@ func TestParseBlock(t *testing.T) {
 	progtok := lexer.NewTokenIterator(lexer.Lex("{1;word a;}"))
 	ast := ParseBlock(&progtok)
 
-	expected := Block{[]Statement{Literal{"1"}, Declaration{"word", "a"}}}
+	expected := Block{[]Statement{IntLiteral{1}, Declaration{"word", "a"}}}
 
 	if !reflect.DeepEqual(ast, expected) {
 		fmt.Println("expected:", expected)
@@ -70,8 +70,8 @@ func TestParseControl(t *testing.T) {
 	ast := ParseControl(&progtok)
 
 	expected := Control{
-		lexer.KW_WHILE, Binary{Identifier{"a"}, Literal{"1"}, "<="},
-		Block{[]Statement{Binary{Identifier{"a"}, Literal{"1"}, "+="}}},
+		lexer.KW_WHILE, Binary{Identifier{"a"}, IntLiteral{1}, "<="},
+		Block{[]Statement{Binary{Identifier{"a"}, IntLiteral{1}, "+="}}},
 	}
 
 	if !reflect.DeepEqual(ast, expected) {
@@ -88,10 +88,10 @@ func TestParseExpression(t *testing.T) {
 	expected := Binary{
 		Call{"f", []Expression{Identifier{"x"}}},
 		Binary{
-			Unary{Literal{"1"}, "-"},
+			Unary{IntLiteral{1}, "-"},
 			Binary{
-				Binary{Literal{"1"}, Literal{"2"}, "*"},
-				Unary{Literal{"1"}, "-"},
+				Binary{IntLiteral{1}, IntLiteral{2}, "*"},
+				Unary{IntLiteral{1}, "-"},
 				"+",
 			},
 			"+",

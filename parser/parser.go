@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Petelliott/pb/lexer"
 	"os"
+	"strconv"
 )
 
 func ParseProgram(tokens *lexer.TokenIterator) Program {
@@ -84,8 +85,10 @@ func ParseStatement(tokens *lexer.TokenIterator) Statement {
 			return stmnt.(Binary)
 		} else if stmnt.ExpressionType() == EXPR_UNARY {
 			return stmnt.(Unary)
-		} else if stmnt.ExpressionType() == EXPR_LITERAL {
-			return stmnt.(Literal)
+		} else if stmnt.ExpressionType() == EXPR_STRLITERAL {
+			return stmnt.(StrLiteral)
+		} else if stmnt.ExpressionType() == EXPR_INTLITERAL {
+			return stmnt.(IntLiteral)
 		} else if stmnt.ExpressionType() == EXPR_IDENTIFIER {
 			return stmnt.(Identifier)
 		} else {
@@ -152,7 +155,12 @@ func ParseExpression2(tokens *lexer.TokenIterator) Expression {
 			return Identifier{tok.Value}
 		}
 	} else if tok, ok := tokens.Accept(lexer.LITERAL); ok {
-		return Literal{tok.Value}
+		if tok.Value[0] == '"' || tok.Value[0] == '\'' {
+			return StrLiteral{tok.Value[1 : len(tok.Value)-1]}
+		} else {
+			v, _ := strconv.Atoi(tok.Value)
+			return IntLiteral{v}
+		}
 	} else if _, ok := tokens.Accept(lexer.L_PAREN); ok {
 		exp := ParseExpression(tokens)
 		tokens.Expect(lexer.R_PAREN)
@@ -160,6 +168,6 @@ func ParseExpression2(tokens *lexer.TokenIterator) Expression {
 	} else {
 		fmt.Println("error parsing expression")
 		os.Exit(1)
-		return Literal{""}
+		return StrLiteral{""}
 	}
 }

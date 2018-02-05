@@ -9,7 +9,8 @@ const (
 const (
 	EXPR_BINARY     = iota
 	EXPR_UNARY      = iota
-	EXPR_LITERAL    = iota
+	EXPR_STRLITERAL = iota
+	EXPR_INTLITERAL = iota
 	EXPR_IDENTIFIER = iota
 	EXPR_CALL       = iota
 )
@@ -54,7 +55,11 @@ func (_ Unary) StatementType() int {
 	return STMT_EXPRESSION
 }
 
-func (_ Literal) StatementType() int {
+func (_ IntLiteral) StatementType() int {
+	return STMT_EXPRESSION
+}
+
+func (_ StrLiteral) StatementType() int {
 	return STMT_EXPRESSION
 }
 
@@ -95,12 +100,20 @@ func (_ Unary) ExpressionType() int {
 	return EXPR_UNARY
 }
 
-type Literal struct {
+type IntLiteral struct {
+	Value int
+}
+
+func (_ IntLiteral) ExpressionType() int {
+	return EXPR_INTLITERAL
+}
+
+type StrLiteral struct {
 	Value string
 }
 
-func (_ Literal) ExpressionType() int {
-	return EXPR_LITERAL
+func (_ StrLiteral) ExpressionType() int {
+	return EXPR_STRLITERAL
 }
 
 type Identifier struct {
