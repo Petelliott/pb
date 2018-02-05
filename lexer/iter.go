@@ -5,6 +5,29 @@ import (
 	"os"
 )
 
+var Toktable = map[int]string {
+    IDENTIFIER: "identifier",
+    LITERAL   : "literal",
+    L_PAREN   : "'('",
+    R_PAREN   : "')'",
+    L_BRACKET : "'['",
+    R_BRACKET : "']'",
+    L_BRACE   : "'{'",
+    R_BRACE   : "'}'",
+    SEMICOLON : "';'",
+    COMMA     : "','",
+    DOT       : "'.'",
+    OPERATOR  : "operator",
+    EOF       : "EOF",
+    ERROR     : "ERROR",
+    KW_FOR    : "'for'",
+    KW_WHILE  : "'while'",
+    KW_IF     : "'if'",
+    KW_ELSE   : "'else'",
+    KW_RETURN : "'return'",
+    TYPE      : "type",
+}
+
 type TokenIterator struct {
 	tokens []Token
 	cursor int
@@ -41,7 +64,7 @@ func (ti *TokenIterator) Expect(tok int) Token {
 		ti.cursor++
 		return token
 	}
-	fmt.Println("expected:", tok, ", got:", token.Tok)
+	fmt.Printf("Expected %s got %s\n", Toktable[tok], Toktable[token.Tok])
 	os.Exit(1)
 	return token
 }
