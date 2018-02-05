@@ -1,0 +1,6 @@
+language: go
+dist: trusty
+
+script:
+    - go test github.com/petelliott/pb/lexer
+    - go test github.com/petelliott/pb/parser
