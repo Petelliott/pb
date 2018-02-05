@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"github.com/petelliott/pb/lexer"
+	"os"
 )
 
 func ParseProgram(tokens *lexer.TokenIterator) Program {
@@ -108,12 +109,46 @@ func ParseControl(tokens *lexer.TokenIterator) Control {
 }
 
 func ParseExpression(tokens *lexer.TokenIterator) Expression {
-	if _, ok := tokens.Accept(lexer.L_PAREN); ok {
+	left := ParseExpression1(tokens)
+	if tok, ok := tokens.Accept(lexer.OPERATOR); ok {
+		var exp Binary
+		exp.Arg1 = left
+		exp.Operator = tok.Value
+		exp.Arg2 = ParseExpression(tokens)
+		return exp
+	} else {
+		return left
+	}
+}
+
+func ParseExpression1(tokens *lexer.TokenIterator) Expression {
+	if tok, ok := tokens.Accept(lexer.OPERATOR); ok {
+		var exp Unary
+		exp.Operator = tok.Value
+		exp.Arg1 = ParseExpression2(tokens)
+		return exp
+	} else {
+		return ParseExpression2(tokens)
+	}
+}
+
+func ParseExpression2(tokens *lexer.TokenIterator) Expression {
+	if tok, ok := tokens.Accept(lexer.IDENTIFIER); ok {
+		if _, ok2 := tokens.Accept(lexer.L_PAREN); ok2 {
+			tokens.Expect(lexer.R_PAREN) // TODO: function args
+			return Call{tok.Value, make([]Expression, 0)}
+		} else {
+			return Identifier{tok.Value}
+		}
+	} else if tok, ok := tokens.Accept(lexer.LITERAL); ok {
+		return Literal{tok.Value}
+	} else if _, ok := tokens.Accept(lexer.L_PAREN); ok {
 		exp := ParseExpression(tokens)
 		tokens.Expect(lexer.R_PAREN)
 		return exp
 	} else {
-		tokens.Expect(lexer.DOT)
-		return Literal{"1"}
+		fmt.Println("error parsing expression")
+		os.Exit(1)
+		return Literal{""}
 	}
 }
