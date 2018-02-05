@@ -5,3 +5,4 @@ dist: trusty
 script:
     - go test github.com/Petelliott/pb/lexer
     - go test github.com/Petelliott/pb/parser
+    - go test github.com/Petelliott/pb/optimizer
