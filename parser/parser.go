@@ -136,19 +136,19 @@ func ParseExpression2(tokens *lexer.TokenIterator) Expression {
 	if tok, ok := tokens.Accept(lexer.IDENTIFIER); ok {
 		if _, ok2 := tokens.Accept(lexer.L_PAREN); ok2 {
 			call := Call{tok.Value, make([]Expression, 0)}
-            if _, ok := tokens.Accept(lexer.R_PAREN); !ok {
-                for {
-                    call.Args = append(call.Args, ParseExpression(tokens))
+			if _, ok := tokens.Accept(lexer.R_PAREN); !ok {
+				for {
+					call.Args = append(call.Args, ParseExpression(tokens))
 
-                    if _, ok := tokens.Accept(lexer.R_PAREN); ok {
-                        break
-                    }
+					if _, ok := tokens.Accept(lexer.R_PAREN); ok {
+						break
+					}
 
-                    tokens.Expect(lexer.COMMA)
-                }
-            }
-		    return call
-        } else {
+					tokens.Expect(lexer.COMMA)
+				}
+			}
+			return call
+		} else {
 			return Identifier{tok.Value}
 		}
 	} else if tok, ok := tokens.Accept(lexer.LITERAL); ok {
