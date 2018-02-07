@@ -4,6 +4,7 @@ const (
 	STMT_DECLARATION = iota
 	STMT_CONTROL     = iota
 	STMT_EXPRESSION  = iota
+	STMT_RETURN      = iota
 )
 
 const (
@@ -35,8 +36,16 @@ type Block struct {
 	Stmts []Statement
 }
 
+type Return struct {
+	Expr Expression
+}
+
 type Statement interface {
 	StatementType() int
+}
+
+func (_ Return) StatementType() int {
+	return STMT_RETURN
 }
 
 func (_ Declaration) StatementType() int {

@@ -78,6 +78,11 @@ func ParseStatement(tokens *lexer.TokenIterator) Statement {
 		stmnt := ParseDeclaration(tokens)
 		tokens.Expect(lexer.SEMICOLON)
 		return stmnt
+	} else if tok.Tok == lexer.KW_RETURN {
+		tokens.Expect(lexer.KW_RETURN)
+		rt_expr := ParseExpression(tokens)
+		tokens.Expect(lexer.SEMICOLON)
+		return Return{rt_expr}
 	} else {
 		stmnt := ParseExpression(tokens)
 		tokens.Expect(lexer.SEMICOLON)

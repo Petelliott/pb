@@ -81,6 +81,19 @@ func TestParseControl(t *testing.T) {
 	}
 }
 
+func TestParseReturn(t *testing.T) {
+	progtok := lexer.NewTokenIterator(lexer.Lex("return 1+1;"))
+	ast := ParseStatement(&progtok)
+
+	expected := Return{Binary{IntLiteral{1}, IntLiteral{1}, "+"}}
+
+	if !reflect.DeepEqual(ast, expected) {
+		fmt.Println("expected:", expected)
+		fmt.Println("got     :", ast)
+		t.Fail()
+	}
+}
+
 func TestParseExpression(t *testing.T) {
 	progtok := lexer.NewTokenIterator(lexer.Lex("f(x) == -1 + (1*2) + -1"))
 	ast := ParseExpression(&progtok)
