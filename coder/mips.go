@@ -2,6 +2,7 @@ package coder
 
 import (
 	"fmt"
+	"github.com/Petelliott/pb/lexer"
 	"github.com/Petelliott/pb/parser"
 	"strconv"
 )
@@ -59,7 +60,7 @@ func GenMipsBlock(body parser.Block, regmap *map[string]string, sreg *int, stack
 			prog += expr
 			prog += "\n"
 		} else if stmt.StatementType() == parser.STMT_CONTROL {
-			// prog += GenMipsControl(stmt, regmap, sreg)
+			prog += GenMipsControl(stmt.(parser.Control), regmap, sreg, stack)
 		} else if stmt.StatementType() == parser.STMT_DECLARATION {
 			decl := stmt.(parser.Declaration)
 			(*regmap)[decl.Name] = fmt.Sprintf("$s%d", *sreg)
@@ -67,6 +68,24 @@ func GenMipsBlock(body parser.Block, regmap *map[string]string, sreg *int, stack
 		}
 	}
 	return prog
+}
+
+var ctrl_lbl = 0
+
+func GenMipsControl(ctrl parser.Control, regmap *map[string]string, sreg *int, stack int) string {
+	ctrl_prog := fmt.Sprintf("CTRL%d:\n", ctrl_lbl)
+	expr_str, reg := GenMipsExpression(ctrl.Expr, regmap, 0, stack)
+	ctrl_prog += expr_str
+	ctrl_prog += fmt.Sprintf("    beq %s, $zero, ENDCTRL%d\n\n", reg, ctrl_lbl)
+
+	ctrl_prog += GenMipsBlock(ctrl.Body, regmap, sreg, stack)
+
+	if ctrl.Keyword != lexer.KW_IF {
+		ctrl_prog += fmt.Sprintf("    j CTRL%d\n", ctrl_lbl)
+	}
+	ctrl_prog += fmt.Sprintf("ENDCTRL%d:\n", ctrl_lbl)
+	ctrl_lbl++
+	return ctrl_prog
 }
 
 func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg int, stack int) (string, string) {
