@@ -41,11 +41,16 @@ func GenMipsFunction(f parser.Function) string {
 	prog += arg_str
 	prog += block_str
 
-	prog += "    lw $ra, -4($fp)\n"
-	for i := 1; i < sreg+1; i++ {
+	prog += GenMipsReturn(&sreg, stack)
+	return prog
+}
+
+func GenMipsReturn(sreg *int, stack int) string {
+	prog := "    lw $ra, -4($fp)\n"
+	for i := 1; i < *sreg+1; i++ {
 		prog += fmt.Sprintf("    lw $s%d, -%d($fp)\n", i-1, stack+(i+1)*4)
 	}
-	prog += fmt.Sprintf("    addi $sp, $sp, %d\n", 4*(sreg+1))
+	prog += fmt.Sprintf("    addi $sp, $sp, %d\n", 4*(*sreg+1))
 	prog += "    lw $fp, ($sp)\n    addi $sp, $sp, 4\n\n"
 
 	prog += "    jr $ra\n"
@@ -65,6 +70,11 @@ func GenMipsBlock(body parser.Block, regmap *map[string]string, sreg *int, stack
 			decl := stmt.(parser.Declaration)
 			(*regmap)[decl.Name] = fmt.Sprintf("$s%d", *sreg)
 			(*sreg)++
+		} else if stmt.StatementType() == parser.STMT_RETURN {
+			ret := stmt.(parser.Return)
+			expr, reg := GenMipsExpression(ret.Expr, regmap, 0, stack)
+			prog += expr + fmt.Sprintf("    move $v0, %s\n", reg)
+			prog += GenMipsReturn(sreg, stack)
 		}
 	}
 	return prog
