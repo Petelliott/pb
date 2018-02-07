@@ -8,11 +8,13 @@ import (
 )
 
 func GenMipsProgram(ast parser.Program) string {
-	prog := ".text\n"
+	header := ".text\n"
+	prog := ""
 	for _, f := range ast.Functions {
+		header += ".globl " + f.Name + "\n"
 		prog += GenMipsFunction(f)
 	}
-	return prog
+	return header + "\n" + prog
 }
 
 func GenMipsFunction(f parser.Function) string {
@@ -20,8 +22,7 @@ func GenMipsFunction(f parser.Function) string {
 	sreg := 0
 	stack := 0
 
-	prog := "\n.globl " + f.Name + "\n" + f.Name + ":\n"
-
+	prog := "\n" + f.Name + ":\n"
 	arg_str := ""
 	for pos, arg := range f.Args {
 		regmap[arg.Name] = "$s" + strconv.Itoa(pos)
@@ -51,9 +52,9 @@ func GenMipsReturn(sreg *int, stack int) string {
 		prog += fmt.Sprintf("    lw $s%d, -%d($fp)\n", i-1, stack+(i+1)*4)
 	}
 	prog += fmt.Sprintf("    addi $sp, $sp, %d\n", 4*(*sreg+1))
-	prog += "    lw $fp, ($sp)\n    addi $sp, $sp, 4\n\n"
+	prog += "    lw $fp, ($sp)\n    addi $sp, $sp, 4\n"
 
-	prog += "    jr $ra\n"
+	prog += "    jr $ra\n\n"
 	return prog
 }
 
@@ -117,10 +118,12 @@ func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg i
 			return prog1 + prog2 + fmt.Sprintf("    sub %s, %s, %s\n", newtreg, reg1, reg2), newtreg
 		} else if binex.Operator == "=" {
 			if binex.Arg1.ExpressionType() == parser.EXPR_IDENTIFIER {
-				return prog1 + prog2 + fmt.Sprintf("    move %s, %s\n", reg1, reg2), reg2
+				return prog1 + prog2 + fmt.Sprintf("    move %s, %s\n", reg1, reg2), reg1
 			} else {
 				fmt.Println("assignment to non identifier expression")
 			}
+		} else if binex.Operator == "<" {
+			return prog1 + prog2 + fmt.Sprintf("    slt %s, %s, %s\n", newtreg, reg1, reg2), newtreg
 		} else {
 			fmt.Printf("unsupported binary operation '%s'\n", binex.Operator)
 		}
@@ -164,7 +167,8 @@ func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg i
 		if treg > 0 {
 			call_str += fmt.Sprintf("    addi $sp, $sp, %d\n", 4*(treg))
 		}
-		return call_str + "\n", "$v0"
+		call_str += fmt.Sprintf("    move $t%d, $v0\n", treg)
+		return call_str + "\n", fmt.Sprintf("$t%d", treg)
 	} else {
 		fmt.Println("unsupported expression type")
 	}
