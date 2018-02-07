@@ -21,7 +21,9 @@ func GenMipsFunction(f parser.Function) string {
 	prog := "\n.globl " + f.Name + "\n" + f.Name + ":\n"
 
 	for pos, arg := range f.Args {
-		regmap[arg.Name] = "$a" + strconv.Itoa(pos)
+		regmap[arg.Name] = "$s" + strconv.Itoa(pos)
+		prog += fmt.Sprintf("    move $s%d, $a%d\n", pos, pos)
+		sreg++
 	}
 
 	prog += GenMipsBlock(f.Body, &regmap, &sreg)
@@ -92,6 +94,16 @@ func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg i
 	} else if expr.ExpressionType() == parser.EXPR_IDENTIFIER {
 		ident := expr.(parser.Identifier)
 		return "", (*regmap)[ident.Name]
+	} else if expr.ExpressionType() == parser.EXPR_CALL {
+		call := expr.(parser.Call)
+		call_str := ""
+		for pos, arg := range call.Args {
+			arg_str, reg := GenMipsExpression(arg, regmap, treg)
+			call_str += arg_str
+			call_str += fmt.Sprintf("    move $a%d, %s\n\n", pos, reg)
+		}
+		call_str += fmt.Sprintf("    jal %s\n\n", call.Name)
+		return call_str, "$v0"
 	} else {
 		fmt.Println("unsupported expression type")
 	}
