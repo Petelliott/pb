@@ -8,7 +8,7 @@ type TACprogram struct {
 }
 
 type TACfunction struct {
-    Vars []string
+    Vars map[string]TACaddr
     Args []string
 
     Body []TACstatement
@@ -26,7 +26,9 @@ const (
     TAC_VARIABLE   = iota
     TAC_TEMP       = iota
     TAC_INTLITERAL = iota
+    TAC_ARGUMENT   = iota
     TAC_NONE       = iota
+    TAC_RETRUN     = iota
 )
 
 type TACaddr struct {
@@ -55,6 +57,8 @@ func (taddr TACaddr) String() string {
         return fmt.Sprintf("v%d", taddr.Index)
     } else if taddr.TACtype == TAC_TEMP {
         return fmt.Sprintf("t%d", taddr.Index)
+    } else if taddr.TACtype == TAC_RETURN {
+        return fmt.Sprintf("r%d", taddr.Index)
     } else if taddr.TACtype == TAC_INTLITERAL {
         return fmt.Sprintf("%d", taddr.Index)
     } else if taddr.TACtype == TAC_NONE {
