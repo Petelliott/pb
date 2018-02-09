@@ -62,7 +62,7 @@ func GenMipsBlock(body parser.Block, regmap *map[string]string, sreg *int, stack
 	prog := ""
 	for _, stmt := range body.Stmts {
 		if stmt.StatementType() == parser.STMT_EXPRESSION {
-			expr, _ := GenMipsExpression(stmt.(parser.Expression), regmap, 0, stack)
+			expr, _ := GenMipsExpression(stmt.(parser.Expression), regmap, 0, sreg, stack)
 			prog += expr
 			prog += "\n"
 		} else if stmt.StatementType() == parser.STMT_CONTROL {
@@ -73,7 +73,7 @@ func GenMipsBlock(body parser.Block, regmap *map[string]string, sreg *int, stack
 			(*sreg)++
 		} else if stmt.StatementType() == parser.STMT_RETURN {
 			ret := stmt.(parser.Return)
-			expr, reg := GenMipsExpression(ret.Expr, regmap, 0, stack)
+			expr, reg := GenMipsExpression(ret.Expr, regmap, 0, sreg, stack)
 			prog += expr + fmt.Sprintf("    move $v0, %s\n", reg)
 			prog += GenMipsReturn(sreg, stack)
 		}
@@ -85,7 +85,7 @@ var ctrl_lbl = 0
 
 func GenMipsControl(ctrl parser.Control, regmap *map[string]string, sreg *int, stack int) string {
 	ctrl_prog := fmt.Sprintf("CTRL%d:\n", ctrl_lbl)
-	expr_str, reg := GenMipsExpression(ctrl.Expr, regmap, 0, stack)
+	expr_str, reg := GenMipsExpression(ctrl.Expr, regmap, 0, sreg,  stack)
 	ctrl_prog += expr_str
 	ctrl_prog += fmt.Sprintf("    beq %s, $zero, ENDCTRL%d\n\n", reg, ctrl_lbl)
 
@@ -99,17 +99,17 @@ func GenMipsControl(ctrl parser.Control, regmap *map[string]string, sreg *int, s
 	return ctrl_prog
 }
 
-func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg int, stack int) (string, string) {
+func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg int, sreg *int, stack int) (string, string) {
 	if expr.ExpressionType() == parser.EXPR_BINARY {
 		binex := expr.(parser.Binary)
-		prog1, reg1 := GenMipsExpression(binex.Arg1, regmap, treg, stack)
+		prog1, reg1 := GenMipsExpression(binex.Arg1, regmap, treg, sreg, stack)
 
 		tmpt := treg + 1
 		if reg1[1] != 't' {
 			tmpt = treg
 		}
 
-		prog2, reg2 := GenMipsExpression(binex.Arg2, regmap, tmpt, stack)
+		prog2, reg2 := GenMipsExpression(binex.Arg2, regmap, tmpt, sreg, stack)
 
 		newtreg := fmt.Sprintf("$t%d", treg)
 		if binex.Operator == "+" {
@@ -129,7 +129,7 @@ func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg i
 		}
 	} else if expr.ExpressionType() == parser.EXPR_UNARY {
 		unex := expr.(parser.Unary)
-		prog1, reg1 := GenMipsExpression(unex.Arg1, regmap, treg, stack)
+		prog1, reg1 := GenMipsExpression(unex.Arg1, regmap, treg, sreg, stack)
 
 		newtreg := fmt.Sprintf("$t%d", treg)
 		if unex.Operator == "-" {
@@ -150,7 +150,7 @@ func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg i
 		call := expr.(parser.Call)
 		call_str := ""
 		for pos, arg := range call.Args {
-			arg_str, reg := GenMipsExpression(arg, regmap, treg, stack)
+			arg_str, reg := GenMipsExpression(arg, regmap, treg, sreg, stack)
 			call_str += arg_str
 			call_str += fmt.Sprintf("    move $a%d, %s\n\n", pos, reg)
 		}
@@ -158,11 +158,11 @@ func GenMipsExpression(expr parser.Expression, regmap *map[string]string, treg i
 			call_str += fmt.Sprintf("    addi $sp, $sp, -%d\n", 4*(treg))
 		}
 		for i := 0; i < treg; i++ {
-			call_str += fmt.Sprintf("    sw $t%d, -%d($fp)\n", i, stack+(i+1)*4)
+			call_str += fmt.Sprintf("    sw $t%d, -%d($fp)\n", i, 4*(*sreg+1)+(i+1)*4)
 		}
 		call_str += fmt.Sprintf("    jal %s\n", call.Name)
 		for i := 0; i < treg; i++ {
-			call_str += fmt.Sprintf("    lw $t%d, -%d($fp)\n", i, stack+(i+1)*4)
+			call_str += fmt.Sprintf("    lw $t%d, -%d($fp)\n", i, 4*(*sreg+1)+(i+1)*4)
 		}
 		if treg > 0 {
 			call_str += fmt.Sprintf("    addi $sp, $sp, %d\n", 4*(treg))
